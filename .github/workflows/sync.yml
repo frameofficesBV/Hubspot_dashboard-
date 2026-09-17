@@ -1,0 +1,14 @@
+name: Sync HubSpot
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # elke dag om 08:00 UTC
+  workflow_dispatch:       # handmatig uitvoeren via knop
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Apps Script sync
+        run: |
+          curl -L "https://script.google.com/macros/s/AKfycbzWP15GnNGdzDZPn00xQMIANJ6MkM9DHu64bSAdfut49C82jyOZie3jNgYOPiKjVJRa/exec?action=sync"
