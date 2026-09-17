@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frame Offices — Marketing Dashboard 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0f1117;color:#f0efec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;}
+.header{padding:1rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;}
+.header h1{font-size:16px;font-weight:500;}
+.badge{background:#1d4ed8;color:#fff;font-size:11px;padding:2px 8px;border-radius:99px;margin-left:8px;}
+.btn{background:transparent;color:#898781;border:1px solid rgba(255,255,255,0.1);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;}
+select{background:#1a1d27;border:1px solid rgba(255,255,255,0.1);color:#f0efec;padding:4px 8px;border-radius:6px;font-size:12px;}
+.main{padding:1rem 1.5rem;}
+.filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.filter-label{font-size:11px;color:#898781;}
+
+/* MOBIEL */
+@media(max-width:600px){
+  .header{padding:.75rem 1rem;flex-wrap:wrap;gap:8px;}
+  .header h1{font-size:14px;}
+  .main{padding:.75rem 1rem;}
+  .filter-row{gap:6px;}
+  .filter-row select{font-size:11px;padding:4px 6px;flex:1;min-width:0;}
+  .blok{padding:.75rem;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:6px;}
+  .kpi-val{font-size:18px;}
+  .charts-row{grid-template-columns:1fr!important;}
+  .tbl-wrap{-webkit-overflow-scrolling:touch;}
+  .ovz-tbl td,.ovz-tbl th{padding:4px 6px;font-size:10px;}
+  .deals-tbl td,.deals-tbl th{padding:3px 6px;font-size:10px;}
+  .month-bar{font-size:11px;padding:5px 8px;flex-wrap:wrap;gap:4px;}
+  .charts-row > div:nth-child(2),.charts-row > div:nth-child(3){display:none;}
+  #updatePanel{width:100%!important;right:-100%!important;}
+  #updatePanel.open-mobile{right:0!important;}
+  .summary-val{font-size:16px;}
+}
+
+/* MOBIEL */
+@media(max-width:600px){
+  .header{padding:.75rem 1rem;flex-wrap:wrap;gap:8px;}
+  .header h1{font-size:14px;}
+  .main{padding:.75rem 1rem;}
+  .filter-row{gap:6px;}
+  .filter-row select{font-size:11px;padding:4px 6px;flex:1;min-width:0;}
+  .blok{padding:.75rem;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:6px;}
+  .kpi-val{font-size:18px;}
+  .charts-row{grid-template-columns:1fr!important;}
+  .tbl-wrap{-webkit-overflow-scrolling:touch;}
+  .ovz-tbl td,.ovz-tbl th{padding:4px 6px;font-size:10px;}
+  .deals-tbl td,.deals-tbl th{padding:3px 6px;font-size:10px;}
+  .month-bar{font-size:11px;padding:5px 8px;flex-wrap:wrap;gap:4px;}
+  .charts-row > div:nth-child(2),.charts-row > div:nth-child(3){display:none;}
+  #updatePanel{width:100%!important;right:-100%!important;}
+  #updatePanel.open-mobile{right:0!important;}
+  .summary-val{font-size:16px;}
+}
+
+/* BLOK 1: OVERZICHT */
+.blok{background:#1a1d27;border-radius:10px;padding:1rem;margin-bottom:1rem;}
+.blok-title{font-size:11px;color:#898781;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;font-weight:500;}
+.tbl-wrap{overflow-x:auto;}
+.ovz-tbl{border-collapse:collapse;font-size:11px;white-space:nowrap;}
+.ovz-tbl th{background:#22263a;color:#898781;font-weight:500;padding:5px 10px;text-align:center;border:1px solid rgba(255,255,255,0.05);}
+.ovz-tbl th.lft{text-align:left;}
+.ovz-tbl td{padding:5px 10px;border:1px solid rgba(255,255,255,0.04);text-align:center;color:#f0efec;}
+.ovz-tbl td.lft{text-align:left;color:#898781;font-style:italic;}
+.pos{color:#1baf7a;font-weight:500;}
+.neg{color:#e34948;font-weight:500;}
+.pct-row td{color:#5b7a9d;font-style:italic;background:rgba(255,255,255,0.01);}
+.red-blk{background:#2d1a1a !important;color:#e34948;font-weight:500;}
+.grn-blk{background:#1a2d1a !important;color:#1baf7a;font-weight:500;}
+.mnd-hdr{background:#1d4ed8 !important;color:#fff;font-weight:500;}
+.mnd-fut{background:#22263a !important;color:#898781;}
+.mnd-cat{background:#1a1a2d !important;color:#898781;font-style:italic;font-size:10px;}
+
+/* BLOK 2: KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;}
+.kpi{background:#22263a;border-radius:8px;padding:10px 12px;}
+.kpi-label{font-size:10px;color:#898781;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+.kpi-val{font-size:20px;font-weight:500;}
+.kpi-sub{font-size:10px;margin-top:2px;color:#898781;}
+
+/* BLOK 3: GRAFIEKEN */
+.charts-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:1rem;}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr;}}
+.chart-wrap{position:relative;width:100%;height:180px;}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.leg{display:flex;align-items:center;gap:3px;font-size:10px;color:#898781;}
+.leg-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+.bar-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.bar-lbl{font-size:11px;color:#898781;min-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-bg{flex:1;background:rgba(255,255,255,0.06);border-radius:99px;height:5px;}
+.bar-fill{height:5px;border-radius:99px;}
+.bar-val{font-size:11px;font-weight:500;min-width:22px;text-align:right;}
+.lost-row{display:flex;justify-content:space-between;padding:4px 6px;border-radius:4px;background:#22263a;margin-bottom:3px;}
+.lost-r{color:#898781;flex:1;font-size:11px;}
+.lost-c{font-weight:500;color:#e34948;font-size:11px;}
+
+/* DEALS */
+.month-bar{background:#1d4ed8;color:#fff;font-size:12px;font-weight:500;padding:6px 10px;border-radius:6px;margin:10px 0 4px;display:flex;justify-content:space-between;}
+.deals-wrap{overflow-x:auto;margin-bottom:4px;}
+.deals-tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:700px;}
+.deals-tbl th{background:#22263a;color:#898781;font-weight:500;padding:4px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06);}
+.deals-tbl td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.deals-tbl tr:nth-child(even) td{background:rgba(255,255,255,0.01);}
+.s-won{color:#1baf7a;font-weight:500;}
+.s-lost{color:#e34948;}
+.s-open{color:#eda100;}
+
+.loading{text-align:center;padding:3rem;color:#898781;}
+.spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,0.08);border-top-color:#2a78d6;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- SYNC POPUP -->
+<div id="syncPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#1a1d27;border-radius:12px;padding:2rem;width:90%;max-width:400px;text-align:center;">
+    <div style="font-size:16px;font-weight:500;margin-bottom:6px;">HubSpot Sync</div>
+    <div style="font-size:13px;color:#898781;margin-bottom:1.5rem;" id="syncStatusText">Data ophalen van HubSpot...</div>
+    <div style="background:#22263a;border-radius:99px;height:8px;margin-bottom:1rem;overflow:hidden;">
+      <div id="syncBarInner" style="height:8px;background:#1d4ed8;width:0%;transition:width 1.8s ease;border-radius:99px;"></div>
+    </div>
+    <div style="font-size:12px;color:#898781;" id="syncPctText">0%</div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="updateOverlay" onclick="closeUpdates()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:998;"></div>
+
+<!-- UPDATES PANEEL -->
+<div id="updatePanel" style="position:fixed;top:0;right:-420px;width:400px;height:100vh;background:#1a1d27;border-left:1px solid rgba(255,255,255,0.08);z-index:999;transition:right 0.35s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;display:flex;flex-direction:column;">
+  <div style="padding:1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#1a1d27;">
+    <div>
+      <div style="font-size:14px;font-weight:500;">Laatste updates</div>
+      <div style="font-size:11px;color:#898781;margin-top:2px;" id="updateTime"></div>
+    </div>
+    <button onclick="closeUpdates()" style="background:transparent;border:none;color:#898781;font-size:18px;cursor:pointer;">✕</button>
+  </div>
+  <div style="padding:1rem 1.25rem;" id="updateBody">
+    <div style="text-align:center;padding:2rem;color:#898781;">Voer een sync uit om updates te zien.</div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="updateOverlay" onclick="closeUpdates()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:998;"></div>
+
+<!-- UPDATES PANEEL -->
+<div id="updatePanel" style="position:fixed;top:0;right:-420px;width:400px;height:100vh;background:#1a1d27;border-left:1px solid rgba(255,255,255,0.08);z-index:999;transition:right 0.35s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;display:flex;flex-direction:column;">
+  <div style="padding:1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#1a1d27;">
+    <div>
+      <div style="font-size:14px;font-weight:500;">Laatste updates</div>
+      <div style="font-size:11px;color:#898781;margin-top:2px;" id="updateTime"></div>
+    </div>
+    <button onclick="closeUpdates()" style="background:transparent;border:none;color:#898781;font-size:18px;cursor:pointer;">✕</button>
+  </div>
+  <div style="padding:1rem 1.25rem;" id="updateBody">
+    <div style="text-align:center;padding:2rem;color:#898781;">Voer een sync uit om updates te zien.</div>
+  </div>
+</div>
+
+<div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f1117;">
+  <div style="background:#1a1d27;border-radius:12px;padding:2rem;width:100%;max-width:360px;text-align:center;">
+    <div style="font-size:18px;font-weight:500;margin-bottom:6px;">Frame Offices</div>
+    <div style="font-size:13px;color:#898781;margin-bottom:1.5rem;">Marketing Dashboard</div>
+    <input id="pwInput" type="password" placeholder="Wachtwoord invoeren" style="width:100%;background:#22263a;border:1px solid rgba(255,255,255,0.1);color:#f0efec;padding:10px 12px;border-radius:6px;font-size:14px;margin-bottom:10px;outline:none;" onkeydown="if(event.key==='Enter')checkPw()"/>
+    <div id="pwErr" style="color:#e34948;font-size:12px;margin-bottom:8px;display:none;">Onjuist wachtwoord</div>
+    <button onclick="checkPw()" style="width:100%;background:#1d4ed8;color:#fff;border:none;padding:10px;border-radius:6px;font-size:14px;cursor:pointer;">Inloggen</button>
+  </div>
+</div>
+
+<div id="appScreen" style="display:none;">
+<div class="header">
+  <div><h1>Frame Offices<span class="badge">Marketing Dashboard</span></h1></div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span style="font-size:11px;color:#898781;" id="syncTime"></span>
+    <select id="jaarFilter" onchange="loadData()" style="display:none;">
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+    </select>
+    <button class="btn" onclick="loadData()">↻ Vernieuwen</button>
+    <button onclick="openUpdates()" id="notifBtn" style="position:relative;background:transparent;border:1px solid rgba(255,255,255,0.1);color:#898781;padding:4px 10px;border-radius:6px;font-size:14px;cursor:pointer;">🔔<span id="notifDot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:#e34948;border-radius:50%;border:2px solid #0f1117;"></span></button>
+    <button class="btn" id="syncBtn" onclick="runSync()" style="background:#1d4ed8;color:#fff;border-color:#1d4ed8;">⚡ Sync</button>
+  </div>
+</div>
+<div id="syncBar" style="display:none;background:#22263a;height:4px;width:100%;">
+  <div class="bar-inner" style="height:4px;background:#1d4ed8;width:0%;transition:width 0.5s;"></div>
+</div>
+
+<div class="main">
+  <div id="loading" class="loading"><div class="spinner"></div>Data laden...</div>
+  <div id="content" style="display:none;">
+
+    <div class="filter-row">
+      <span class="filter-label">Jaar:</span>
+      <select id="jaarFilterRow" onchange="document.getElementById('jaarFilter').value=this.value;loadData()">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+      </select>
+      <span class="filter-label" style="margin-left:8px;">Filter:</span>
+      <select id="locFilter" onchange="render()"><option value="">Alle locaties</option></select>
+      <select id="maandFilter" onchange="render()">
+        <option value="">Alle maanden</option>
+        <option>January</option><option>February</option><option>March</option>
+        <option>April</option><option>May</option><option>June</option>
+        <option>July</option><option>August</option><option>September</option>
+        <option>October</option><option>November</option><option>December</option>
+      </select>
+
+    </div>
+
+    <!-- BLOK 1: OVERZICHT -->
+    <div class="blok">
+      <div class="blok-title">Overzicht alle locaties</div>
+      <div class="tbl-wrap" id="overzichtTbl"></div>
+    </div>
+
+    <!-- BLOK 1b: MAANDOVERZICHT -->
+    <div class="blok">
+      <div class="blok-title">Maandoverzicht per categorie</div>
+      <div class="tbl-wrap" id="maandoverzichtTbl"></div>
+    </div>
+
+    <!-- BLOK 2: KPI -->
+    <div class="blok">
+      <div class="blok-title">Key metrics</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Totaal leads</div><div class="kpi-val" id="kpiTotaal">—</div><div class="kpi-sub" id="kpiSub"></div></div>
+        <div class="kpi"><div class="kpi-label">Won</div><div class="kpi-val pos" id="kpiWon">—</div><div class="kpi-sub" id="kpiWonPct"></div></div>
+        <div class="kpi"><div class="kpi-label">Open</div><div class="kpi-val s-open" id="kpiOpen">—</div><div class="kpi-sub">nog lopend</div></div>
+        <div class="kpi"><div class="kpi-label">Lost</div><div class="kpi-val neg" id="kpiLost">—</div><div class="kpi-sub" id="kpiLostPct"></div></div>
+        <div class="kpi"><div class="kpi-label">Bedrag won</div><div class="kpi-val" id="kpiBedrag">—</div><div class="kpi-sub">totaal</div></div>
+        <div class="kpi"><div class="kpi-label">Zelf</div><div class="kpi-val" id="kpiZelf">—</div><div class="kpi-sub" id="kpiZelfPct"></div></div>
+        <div class="kpi"><div class="kpi-label">Brokers</div><div class="kpi-val" id="kpiBrokers">—</div><div class="kpi-sub" id="kpiBrokersPct"></div></div>
+        <div class="kpi"><div class="kpi-label">Overig offline</div><div class="kpi-val" id="kpiOverig">—</div><div class="kpi-sub" id="kpiOverigPct"></div></div>
+      </div>
+    </div>
+
+    <!-- BLOK 3: GRAFIEKEN -->
+    <div class="blok">
+      <div class="blok-title">Leads per maand</div>
+      <div class="legend">
+        <span class="leg"><span class="leg-dot" style="background:#2a78d6"></span>Opgehaald</span>
+        <span class="leg"><span class="leg-dot" style="background:#1baf7a"></span>Won</span>
+        <span class="leg"><span class="leg-dot" style="background:#e34948"></span>Lost</span>
+        <span class="leg"><span class="leg-dot" style="background:#eda100"></span>Open</span>
+      </div>
+      <div class="chart-wrap"><canvas id="maandChart" role="img" aria-label="Leads per maand 2026"></canvas></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1rem;" class="charts-row">
+      <div class="blok">
+        <div class="blok-title">Bronnen verdeling</div>
+        <div class="legend" id="bronLegend"></div>
+        <div class="chart-wrap" style="height:160px;"><canvas id="bronChart" role="img" aria-label="Bronnen"></canvas></div>
+      </div>
+      <div class="blok">
+        <div class="blok-title">Bron uitsplitsing</div>
+        <div id="bronList"></div>
+      </div>
+      <div class="blok">
+        <div class="blok-title">Lost reasons</div>
+        <div id="lostList"></div>
+      </div>
+    </div>
+
+    <!-- DEALS PER MAAND -->
+    <div class="blok">
+      <div class="blok-title">Deals per maand</div>
+      <div id="dealsMaanden"></div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /appScreen -->
+
+<script>
+const PASSWORD = 'frameoffices2026';
+const API_URLS = {
+  '2026':'https://script.google.com/macros/s/AKfycbzWP15GnNGdzDZPn00xQMIANJ6MkM9DHu64bSAdfut49C82jyOZie3jNgYOPiKjVJRa/exec',
+  '2025':'JOUW_2025_URL',
+  '2024':'JOUW_2024_URL'
+};
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CATS=['Website','Paid search','Advertenties','Funda','Brokers','Overig offline','Overig'];
+const COLORS={'Website':'#2a78d6','Paid search':'#eb6834','Advertenties':'#1baf7a','Funda':'#eda100','Brokers':'#e87ba4','Overig offline':'#898781','Overig':'#6250d6'};
+const BENODIGD={'Amsterdam Arena':6,'Amsterdam Cuserpark':3,'Amsterdam Keizersgracht':2,'Amsterdam The William':6,'Amsterdam The Rock':6,'Amsterdam Gaudi':3,'Alphen Flemingweg':3,'Den Haag':2,'Haarlem':2,'Hoofddorp Mercurius':2,'Leiden':0,'Leeuwarden':2,'Rotterdam Alexander':3,'Rotterdam Coolsingel':2,'Rotterdam LittleC':4,'Utrecht Atoomweg':3,'Utrecht De Meern':1,'Zwolle Zwartewaterallee':2};
+const currentMonth=new Date().getMonth();
+let allDeals=[],maandChart,bronChart;
+
+// ── LOGIN ─────────────────────────────────────────────────────
+function checkPw(){
+  const val=document.getElementById('pwInput').value;
+  if(val===PASSWORD){
+    localStorage.setItem('fo_auth',btoa(PASSWORD));
+    showDashboard();
+  } else {
+    document.getElementById('pwErr').style.display='block';
+    document.getElementById('pwInput').value='';
+  }
+}
+
+function showDashboard(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appScreen').style.display='block';
+  loadData();
+}
+
+// Check opgeslagen sessie
+if(localStorage.getItem('fo_auth')===btoa(PASSWORD)){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appScreen').style.display='block';
+  loadData();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function fmt(n){return(n!==null&&n!==undefined&&n!=='')?Number(n).toLocaleString('nl-NL'):'—';}
+function pct(a,b){return b>0?Math.round(a/b*100)+'%':'—';}
+function isWon(d){return d['Deal Stage']==='Won';}
+function isLost(d){const s=d['Deal Stage']||'';return s==='Lost'||s==='Closed Lost';}
+function isOpen(d){return !isWon(d)&&!isLost(d);}
+
+// ── DATA LADEN ────────────────────────────────────────────────
+async function loadData(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('content').style.display='none';
+  const jaar=document.getElementById('jaarFilter').value;
+
+  // Check cache eerst voor snelle weergave
+  const cacheKey='fo_data_'+jaar;
+  const cached=localStorage.getItem(cacheKey);
+  if(cached){
+    try{
+      allDeals=JSON.parse(cached);
+      populateFilters();
+      document.getElementById('loading').style.display='none';
+      document.getElementById('content').style.display='block';
+      render();
+    }catch(e){}
+  }
+
+  try{
+    // Google Sheets JSON API — werkt zonder CORS problemen
+    const sheetsUrls = {
+      '2026': 'https://docs.google.com/spreadsheets/d/1olgAkptaZj0Kg9oPsDW191Qg24ofahlqpa1dM4xiXE0/gviz/tq?tqx=out:json&sheet=Dashboard_Data',
+      '2025': 'JOUW_2025_SHEET_URL',
+      '2024': 'JOUW_2024_SHEET_URL'
+    };
+    const url = sheetsUrls[jaar];
+    if(url.includes('JOUW')){
+      if(!cached) document.getElementById('loading').innerHTML='<div style="color:#eda100">Sheet URL voor '+jaar+' nog niet ingesteld.</div>';
+      return;
+    }
+
+    const resp=await fetch(url+'&t='+Date.now());
+    const text=await resp.text();
+
+    // Google Sheets JSON heeft een prefix die we moeten verwijderen
+    const jsonText=text.replace(/^\/\*O_o\*\/
+google\.visualization\.Query\.setResponse\(/, '').replace(/\);$/, '');
+    const gviz=JSON.parse(jsonText);
+
+    // Converteer Google Sheets formaat naar ons formaat
+    const cols=gviz.table.cols.map(c=>c.label);
+    allDeals=gviz.table.rows.map(function(row){
+      const obj={};
+      cols.forEach(function(col,i){
+        const cell=row.c[i];
+        obj[col]=cell?( cell.v!==null&&cell.v!==undefined?cell.v:''):'';
+      });
+      return obj;
+    });
+
+    localStorage.setItem(cacheKey,JSON.stringify(allDeals));
+    document.getElementById('syncTime').textContent='Bijgewerkt: '+new Date().toLocaleTimeString('nl-NL');
+    populateFilters();
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').style.display='block';
+    render();
+  }catch(e){
+    if(!cached){
+      document.getElementById('loading').innerHTML='<div style="color:#e34948">Fout: '+e.message+'<br><small>Zorg dat de Sheet publiek deelbaar is als Viewer.</small></div>';
+    }
+  }
+}
+
+function populateFilters(){
+  const locs=[...new Set(allDeals.map(d=>d['Locatie']).filter(Boolean))].sort();
+  const sel=document.getElementById('locFilter');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Alle locaties</option>';
+  locs.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;if(l===cur)o.selected=true;sel.appendChild(o);});
+}
+
+function getFiltered(){
+  const loc=document.getElementById('locFilter').value;
+  const maand=document.getElementById('maandFilter').value;
+  return allDeals.filter(d=>(!loc||d['Locatie']===loc)&&(!maand||d['Month']===maand));
+}
+
+// ── UPDATES PANEEL ───────────────────────────────────────────
+function isMobile(){return window.innerWidth<=600;}
+function openUpdates(){
+  const panel=document.getElementById('updatePanel');
+  if(isMobile()){panel.classList.add('open-mobile');}
+  else{panel.style.right='0';}
+  document.getElementById('updateOverlay').style.display='block';
+  document.getElementById('notifDot').style.display='none';
+}
+function closeUpdates(){
+  const panel=document.getElementById('updatePanel');
+  panel.style.right=isMobile()?'-100%':'-420px';
+  panel.classList.remove('open-mobile');
+  document.getElementById('updateOverlay').style.display='none';
+}
+
+function toonUpdates(data){
+  const updates = data.updates || {};
+  const nieuw = updates.nieuw || [];
+  const gewonnen = updates.gewonnen || [];
+  const lost = updates.lost || [];
+  const totaal = data.totaal || 0;
+
+  document.getElementById('updateTime').textContent = 'Sync voltooid — ' + new Date().toLocaleString('nl-NL');
+
+  let html = '';
+
+  // Samenvatting
+  html += '<div style="background:#22263a;border-radius:8px;padding:10px 12px;margin-bottom:1rem;display:flex;justify-content:space-between;">';
+  html += '<div style="text-align:center;"><div style="font-size:18px;font-weight:500;color:#2a78d6;">'+totaal+'</div><div style="font-size:10px;color:#898781;margin-top:2px;">Totaal</div></div>';
+  html += '<div style="text-align:center;"><div style="font-size:18px;font-weight:500;color:#1baf7a;">+'+nieuw.length+'</div><div style="font-size:10px;color:#898781;margin-top:2px;">Nieuw</div></div>';
+  html += '<div style="text-align:center;"><div style="font-size:18px;font-weight:500;color:#1baf7a;">+'+gewonnen.length+'</div><div style="font-size:10px;color:#898781;margin-top:2px;">Won</div></div>';
+  html += '<div style="text-align:center;"><div style="font-size:18px;font-weight:500;color:#e34948;">+'+lost.length+'</div><div style="font-size:10px;color:#898781;margin-top:2px;">Lost</div></div>';
+  html += '</div>';
+
+  function sectie(titel, items, kleur, emoji, renderItem){
+    if(!items.length) return '';
+    let s = '<div style="margin-bottom:1.25rem;">';
+    s += '<div style="font-size:10px;color:#898781;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:6px;">';
+    s += '<span style="width:6px;height:6px;border-radius:50%;background:'+kleur+';display:inline-block;"></span>'+titel+' ('+items.length+')</div>';
+    items.forEach(function(item){
+      s += '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">';
+      s += '<div style="width:28px;height:28px;border-radius:6px;background:'+kleur+'22;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">'+emoji+'</div>';
+      s += '<div style="flex:1;">'+renderItem(item)+'</div>';
+      s += '</div>';
+    });
+    s += '</div>';
+    return s;
+  }
+
+  html += sectie('Nieuwe deals', nieuw, '#2a78d6', '🏢', function(d){
+    return '<div style="font-size:12px;font-weight:500;">'+d.name+'</div>'+
+           '<div style="font-size:11px;color:#898781;margin-top:2px;">'+d.locatie+' · '+(d.source||'—')+'</div>'+
+           '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:rgba(29,78,216,0.2);color:#60a5fa;margin-top:3px;display:inline-block;">'+d.stage+'</span>';
+  });
+
+  html += sectie('Gewonnen', gewonnen, '#1baf7a', '🎉', function(d){
+    return '<div style="font-size:12px;font-weight:500;">'+d.name+'</div>'+
+           '<div style="font-size:11px;color:#898781;margin-top:2px;">'+d.locatie+' · '+(d.source||'—')+(d.amount?' · € '+Number(d.amount).toLocaleString('nl-NL'):'')+'</div>'+
+           '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:rgba(27,175,122,0.2);color:#1baf7a;margin-top:3px;display:inline-block;">Won</span>';
+  });
+
+  html += sectie('Lost', lost, '#e34948', '❌', function(d){
+    return '<div style="font-size:12px;font-weight:500;">'+d.name+'</div>'+
+           '<div style="font-size:11px;color:#898781;margin-top:2px;">'+d.locatie+' · '+(d.source||'—')+'</div>'+
+           '<span style="font-size:10px;padding:2px 6px;border-radius:99px;background:rgba(227,73,72,0.2);color:#e34948;margin-top:3px;display:inline-block;">'+(d.lostReason||'Lost')+'</span>';
+  });
+
+  if(!nieuw.length && !gewonnen.length && !lost.length){
+    html += '<div style="text-align:center;padding:2rem;color:#898781;">Geen wijzigingen gevonden.</div>';
+  }
+
+  document.getElementById('updateBody').innerHTML = html;
+  document.getElementById('notifDot').style.display = (nieuw.length||gewonnen.length||lost.length) ? 'block' : 'none';
+  openUpdates();
+}
+
+// ── SYNC ──────────────────────────────────────────────────────
+async function runSync(){
+  const btn=document.getElementById('syncBtn');
+  const popup=document.getElementById('syncPopup');
+  const barInner=document.getElementById('syncBarInner');
+  const statusText=document.getElementById('syncStatusText');
+  const pctText=document.getElementById('syncPctText');
+
+  btn.disabled=true;
+  btn.textContent='⏳ Bezig...';
+  popup.style.display='flex';
+  barInner.style.width='0%';
+  statusText.textContent='Data ophalen van HubSpot...';
+  pctText.textContent='0%';
+
+  // Animeer laadbalk (~3 min = 180 sec, stap per 2 sec)
+  let progress=0;
+  const steps=[
+    {at:5,text:'Verbinding maken met HubSpot...'},
+    {at:15,text:'Amsterdam locaties ophalen...'},
+    {at:30,text:'Rotterdam & Den Haag ophalen...'},
+    {at:45,text:'Utrecht & Leiden ophalen...'},
+    {at:60,text:'Overige locaties ophalen...'},
+    {at:75,text:'Data verwerken en categoriseren...'},
+    {at:88,text:'Dashboard_Data bijwerken...'},
+    {at:95,text:'Bijna klaar...'}
+  ];
+  const interval=setInterval(()=>{
+    progress=Math.min(progress+0.5,95);
+    barInner.style.width=progress+'%';
+    pctText.textContent=Math.round(progress)+'%';
+    const step=steps.filter(s=>s.at<=progress).pop();
+    if(step)statusText.textContent=step.text;
+  },600);
+
+  try{
+    const url=API_URLS[document.getElementById('jaarFilter').value]+'?action=sync&t='+Date.now();
+    const resp=await fetch(url, {redirect: 'follow', mode: 'cors'});
+    const text=await resp.text();
+    let data;
+    try{data=JSON.parse(text);}catch(e){throw new Error('Ongeldige respons — controleer of Apps Script opnieuw is gedeployed');}
+    clearInterval(interval);
+
+    if(data.success){
+      barInner.style.width='100%';
+      pctText.textContent='100%';
+      statusText.textContent='✅ Sync voltooid!';
+      localStorage.removeItem('fo_data_'+document.getElementById('jaarFilter').value);
+      setTimeout(()=>{
+        popup.style.display='none';
+        btn.textContent='⚡ Sync';
+        btn.disabled=false;
+        barInner.style.width='0%';
+        loadData();
+        toonUpdates(data);
+      },1500);
+    } else {
+      throw new Error(data.error||'Sync mislukt');
+    }
+  }catch(e){
+    clearInterval(interval);
+    popup.style.display='none';
+    btn.textContent='❌ Fout';
+    btn.style.background='#e34948';
+    btn.disabled=false;
+    alert('Sync fout: '+e.message);
+    setTimeout(()=>{btn.textContent='⚡ Sync';btn.style.background='#1d4ed8';},3000);
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function render(){
+  const deals=getFiltered(),total=deals.length;
+  const won=deals.filter(isWon).length;
+  const lost=deals.filter(isLost).length;
+  const open=deals.filter(isOpen).length;
+  const bedrag=deals.filter(isWon).reduce((s,d)=>s+(Number(d['Amount'])||0),0);
+  const catC={};CATS.forEach(c=>catC[c]=0);
+  deals.forEach(d=>{if(catC[d['Categorie']]!==undefined)catC[d['Categorie']]++;});
+  const zelf=(catC['Website']||0)+(catC['Paid search']||0)+(catC['Advertenties']||0)+(catC['Funda']||0);
+  const brok=catC['Brokers']||0;
+  const overig=(catC['Overig offline']||0)+(catC['Overig']||0);
+
+  document.getElementById('kpiTotaal').textContent=total.toLocaleString('nl-NL');
+  document.getElementById('kpiSub').textContent=document.getElementById('jaarFilter').value+' t/m nu';
+  document.getElementById('kpiWon').textContent=won.toLocaleString('nl-NL');
+  document.getElementById('kpiWonPct').textContent=pct(won,total)+' won ratio';
+  document.getElementById('kpiOpen').textContent=open.toLocaleString('nl-NL');
+  document.getElementById('kpiLost').textContent=lost.toLocaleString('nl-NL');
+  document.getElementById('kpiLostPct').textContent=pct(lost,total)+' lost ratio';
+  document.getElementById('kpiBedrag').textContent='€ '+Math.round(bedrag).toLocaleString('nl-NL');
+  document.getElementById('kpiZelf').textContent=zelf.toLocaleString('nl-NL');
+  document.getElementById('kpiZelfPct').textContent=pct(zelf,total);
+  document.getElementById('kpiBrokers').textContent=brok.toLocaleString('nl-NL');
+  document.getElementById('kpiBrokersPct').textContent=pct(brok,total);
+  document.getElementById('kpiOverig').textContent=overig.toLocaleString('nl-NL');
+  document.getElementById('kpiOverigPct').textContent=pct(overig,total);
+
+  renderOverzicht(deals,total,catC,zelf,brok,overig,won);
+  renderMaandChart(deals);
+  renderBronChart(deals,catC);
+  renderBronList(deals,total);
+  renderLostList(deals);
+  renderDealsTable(deals);
+}
+
+function renderOverzicht(deals,total,catC,zelf,brok,overig,wonTotaal){
+  const loc=document.getElementById('locFilter').value;
+  const benodigdPerMaand=loc?(BENODIGD[loc]||0):Object.values(BENODIGD).reduce((s,v)=>s+v,0);
+  const benodigdJaar=benodigdPerMaand*12;
+  const benodigdYTD=benodigdPerMaand*(currentMonth+1);
+  const md={};MONTHS.forEach(m=>md[m]={total:0,won:0,cats:{}});
+  CATS.forEach(c=>MONTHS.forEach(m=>md[m].cats[c]=0));
+  deals.forEach(d=>{
+    if(md[d['Month']]){
+      md[d['Month']].total++;
+      if(isWon(d))md[d['Month']].won++;
+      if(md[d['Month']].cats[d['Categorie']]!==undefined)md[d['Month']].cats[d['Categorie']]++;
+    }
+  });
+
+  // Blok 1
+  let h='<table class="ovz-tbl"><thead><tr>';
+  h+='<th class="lft"></th><th>Benodigd</th><th>Opgehaald</th><th>Verschil</th>';
+  CATS.forEach(c=>h+='<th>'+c+'</th>');
+  h+='</tr></thead><tbody>';
+  const v1=total-benodigdJaar;
+  h+='<tr><td class="lft">Totaal jaar</td><td>'+benodigdJaar.toLocaleString('nl-NL')+'</td><td>'+total.toLocaleString('nl-NL')+'</td>';
+  h+='<td class="'+(v1>=0?'pos':'neg')+'">'+(v1>=0?'+':'')+v1+'</td>';
+  CATS.forEach(c=>h+='<td>'+(catC[c]||0)+'</td>');
+  h+='</tr>';
+  const v2=total-benodigdYTD;
+  h+='<tr><td class="lft">t/m '+MONTHS[currentMonth]+'</td><td>'+benodigdYTD.toLocaleString('nl-NL')+'</td><td>'+total.toLocaleString('nl-NL')+'</td>';
+  h+='<td class="'+(v2>=0?'pos':'neg')+'">'+(v2>=0?'+':'')+v2+'</td>';
+  CATS.forEach(c=>h+='<td>'+(catC[c]||0)+'</td>');
+  h+='</tr>';
+  h+='<tr class="pct-row"><td class="lft">% van opgehaald</td><td></td><td></td><td></td>';
+  CATS.forEach(c=>h+='<td>'+(total>0?Math.round((catC[c]||0)/total*100)+'%':'—')+'</td>');
+  h+='</tr></tbody></table>';
+  document.getElementById('overzichtTbl').innerHTML=h;
+
+  // Blok 2
+  let m2='<table class="ovz-tbl"><thead><tr>';
+  m2+='<th class="lft">Per maand</th>';
+  MONTHS.forEach((m,i)=>m2+='<th class="'+(i>currentMonth?'mnd-fut':'mnd-hdr')+'">'+m.substring(0,3)+'</th>');
+  m2+='</tr></thead><tbody>';
+  m2+='<tr><td class="lft" style="font-weight:500;color:#f0efec;">Opgehaald</td>';
+  MONTHS.forEach((m,i)=>{
+    const val=md[m].total,ben=benodigdPerMaand;
+    const kleur=i>currentMonth?'#898781':(ben>0?(val>=ben?'#1baf7a':'#e34948'):'#f0efec');
+    m2+='<td style="color:'+kleur+';font-weight:500;">'+(i>currentMonth?'—':val)+'</td>';
+  });
+  m2+='</tr>';
+  CATS.forEach(c=>{
+    const color=COLORS[c]||'#898781';
+    m2+='<tr><td class="lft" style="color:'+color+';font-size:11px;">↳ '+c+'</td>';
+    MONTHS.forEach((m,i)=>m2+='<td style="font-size:11px;color:'+(i>currentMonth?'#444':color)+'">'+(i>currentMonth?'—':md[m].cats[c])+'</td>');
+    m2+='</tr>';
+  });
+  m2+='<tr><td class="lft" style="color:#1baf7a;font-weight:500;">Totaal won</td>';
+  MONTHS.forEach((m,i)=>m2+='<td style="color:#1baf7a;font-weight:500;">'+(i>currentMonth?'—':md[m].won)+'</td>');
+  m2+='</tr>';
+  m2+='<tr class="pct-row"><td class="lft">Won ratio</td>';
+  MONTHS.forEach((m,i)=>{const mt=md[m].total;m2+='<td>'+(i>currentMonth?'—':(mt>0?Math.round(md[m].won/mt*100)+'%':'—'))+'</td>';});
+  m2+='</tr>';
+  m2+='<tr><td class="lft" style="color:#898781;">Benodigd</td>';
+  MONTHS.forEach(()=>m2+='<td style="color:#898781;">'+(benodigdPerMaand>0?benodigdPerMaand:'—')+'</td>');
+  m2+='</tr>';
+  m2+='<tr><td class="lft" style="color:#898781;">Verschil</td>';
+  MONTHS.forEach((m,i)=>{
+    if(i>currentMonth){m2+='<td style="color:#898781;">—</td>';return;}
+    const v=md[m].total-benodigdPerMaand;
+    m2+='<td class="'+(v>=0?'pos':'neg')+'">'+(v>=0?'+':'')+v+'</td>';
+  });
+  m2+='</tr></tbody></table>';
+  document.getElementById('maandoverzichtTbl').innerHTML=m2;
+}
+
+function renderMaandChart(deals){
+  const md={};MONTHS.forEach(m=>md[m]={t:0,w:0,l:0,o:0});
+  deals.forEach(d=>{if(md[d['Month']]){md[d['Month']].t++;if(isWon(d))md[d['Month']].w++;else if(isLost(d))md[d['Month']].l++;else md[d['Month']].o++;}});
+  if(maandChart)maandChart.destroy();
+  maandChart=new Chart(document.getElementById('maandChart'),{
+    type:'bar',
+    data:{labels:MONTHS.map(m=>m.substring(0,3)),datasets:[
+      {label:'Opgehaald',data:MONTHS.map(m=>md[m].t),backgroundColor:'#2a78d6',borderRadius:3},
+      {label:'Won',data:MONTHS.map(m=>md[m].w),backgroundColor:'#1baf7a',borderRadius:3},
+      {label:'Lost',data:MONTHS.map(m=>md[m].l),backgroundColor:'#e34948',borderRadius:3},
+      {label:'Open',data:MONTHS.map(m=>md[m].o),backgroundColor:'#eda100',borderRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:'#898781',font:{size:10}}},
+              y:{grid:{color:'#2c2c2a'},ticks:{color:'#898781',font:{size:10}},beginAtZero:true}}}
+  });
+}
+
+function renderBronChart(deals,catC){
+  const labels=CATS.filter(c=>catC[c]>0);
+  const data=labels.map(c=>catC[c]),colors=labels.map(c=>COLORS[c]);
+  if(bronChart)bronChart.destroy();
+  bronChart=new Chart(document.getElementById('bronChart'),{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
+  });
+  const total=deals.length;
+  document.getElementById('bronLegend').innerHTML=labels.map((l,i)=>'<span class="leg"><span class="leg-dot" style="background:'+colors[i]+'"></span>'+l+' ('+data[i]+'/'+pct(data[i],total)+')</span>').join('');
+}
+
+function renderBronList(deals,total){
+  const s={};deals.forEach(d=>{const k=d['Deal Source']||'(leeg)';s[k]=(s[k]||0)+1;});
+  const sorted=Object.entries(s).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById('bronList').innerHTML=sorted.map(([src,c])=>`<div style="display:grid;grid-template-columns:180px 1fr 36px;align-items:center;gap:10px;margin-bottom:6px;"><div style="font-size:11px;color:#898781;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${src}</div><div style="background:rgba(255,255,255,0.06);border-radius:99px;height:5px;"><div style="width:${Math.round(c/max*100)}%;height:5px;border-radius:99px;background:#2a78d6;"></div></div><div style="font-size:11px;font-weight:500;text-align:right;">${c}</div></div>`).join('');
+}
+
+function renderLostList(deals){
+  const r={};deals.filter(d=>d['Lost Reason']).forEach(d=>{r[d['Lost Reason']]=(r[d['Lost Reason']]||0)+1;});
+  document.getElementById('lostList').innerHTML=Object.entries(r).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([reason,c])=>'<div class="lost-row"><div class="lost-r">'+reason+'</div><div class="lost-c">'+c+'</div></div>').join('');
+}
+
+function renderDealsTable(deals){
+  const perMaand={};MONTHS.forEach(m=>perMaand[m]=[]);
+  deals.forEach(d=>{if(perMaand[d['Month']])perMaand[d['Month']].push(d);});
+  let html='';
+  MONTHS.forEach(function(maand){
+    const mDeals=perMaand[maand];
+    if(!mDeals.length)return;
+    const wonC=mDeals.filter(isWon).length,openC=mDeals.filter(isOpen).length;
+    const bedrag=mDeals.filter(isWon).reduce((s,d)=>s+(Number(d['Amount'])||0),0);
+    html+='<div class="month-bar"><span>'+maand+' &nbsp;|&nbsp; '+mDeals.length+' leads &nbsp;|&nbsp; Won: '+wonC+' &nbsp;|&nbsp; Open: '+openC+'</span><span style="font-size:11px;opacity:.8;">'+(bedrag>0?'€ '+Math.round(bedrag).toLocaleString('nl-NL'):'')+'</span></div>';
+    html+='<div class="deals-wrap"><table class="deals-tbl"><thead><tr><th>Datum</th><th>Deal name</th><th>Bron</th><th>Original</th><th>Latest</th><th>Stage</th><th>Amount</th><th>Categorie</th><th>Lost reason</th></tr></thead><tbody>';
+    html+=mDeals.map(d=>{
+      const sc=isWon(d)?'s-won':isLost(d)?'s-lost':'s-open';
+      const cat=d['Categorie']||'—',catColor=COLORS[cat]||'#898781';
+      return '<tr><td style="white-space:nowrap;color:#898781;">'+d['Create Date']+'</td><td>'+d['Deal Name']+'</td><td style="color:#898781;">'+(d['Deal Source']||'—')+'</td><td style="color:#898781;font-size:10px;">'+(d['Original Traffic Source']||'—')+'</td><td style="color:#898781;font-size:10px;">'+(d['Latest Traffic Source']||'—')+'</td><td class="'+sc+'">'+d['Deal Stage']+'</td><td style="white-space:nowrap;">'+(d['Amount']?'€ '+Number(d['Amount']).toLocaleString('nl-NL'):'—')+'</td><td style="color:'+catColor+';font-size:10px;">'+cat+'</td><td style="font-size:10px;color:#e34948;">'+(d['Lost Reason']||'—')+'</td></tr>';
+    }).join('');
+    html+='</tbody></table></div>';
+  });
+  document.getElementById('dealsMaanden').innerHTML=html;
+}
+</script>
+</body>
+</html>
